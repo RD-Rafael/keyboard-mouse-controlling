@@ -40,10 +40,6 @@ MoveMouse:
     }
     Return
 
-;code to move the mouse to the center of the screen
-;if the m key is pressed and a combination of wasd takes place
-;then the mouse will move to the center in relation to its position and the direction that wasd goes
-;if m is released with no wasd press, then the mouse will move to the center of the screen
 
 
 
@@ -60,11 +56,13 @@ MoveMouse:
 
     
     m::
+        
         UserControl := False
         MouseGetPos currentX, currentY
         While(GetKeyState("m", "P")){
             XMovement := -1*GetKeyState("a", "P") + GetKeyState("d", "P")
             YMovement := -1*GetKeyState("w", "P") + GetKeyState("s", "P")
+            ;if the m key is pressed and a combination of wasd takes place
             If(XMovement != 0 || YMovement != 0){
                 Sleep, 50
                 XMovement := -1*GetKeyState("a", "P") + GetKeyState("d", "P")
@@ -91,6 +89,7 @@ MoveMouse:
             } Else If(YMovement == -1){
                 distanceY := -1*topSize/2
             }
+            ;the mouse will move to the center in relation to its position and the direction that wasd goes
             If(distanceX == 0 && distanceY == 0){
                 MouseMove A_ScreenWidth/2, A_ScreenHeight/2
             } Else {
@@ -98,6 +97,7 @@ MoveMouse:
             }
 
         } else {
+            ;if m is released with no wasd press, then the mouse will move to the center of the screen
             MouseMove A_ScreenWidth/2, A_ScreenHeight/2
         }
         Sleep, 50
