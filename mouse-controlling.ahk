@@ -87,7 +87,7 @@ MoveMouse:
     \::
         Activated := False
         SetTimer, MoveMouse, Off
-        MouseMove mX, mY
+        MouseMove A_ScreenWidth/2, A_ScreenHeight/2
         Return    
     m::
         CoordMode, Mouse, Screen
@@ -141,5 +141,5 @@ MoveMouse:
     Insert::
         Activated := True
         SetTimer, MoveMouse, 20
-        MouseMove mX, mY
+        MouseMove A_ScreenWidth/2, A_ScreenHeight/2
         Return
