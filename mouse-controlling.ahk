@@ -8,6 +8,10 @@ global YMovement := 0
 global Velocity := 0
 global MaxVelocity := 30
 global UserControl := True
+global LeftClicking := False
+global RightClicking := False
+global draggingLeft := False
+
 
 MouseGetPos mX, mY
 MsgBox % "ScreenHeight: " . A_ScreenHeight "`nScreenWidth: " . A_ScreenWidth "`nMouseX: " . mX "`nMouseY: " . mY
@@ -25,6 +29,7 @@ calcVelocity(){
 }
 
 MoveMouse:
+    CoordMode, Mouse, Screen
     If(UserControl==True){
         Velocity := calcVelocity()
         XMovement := -1*GetKeyState("a", "P") + GetKeyState("d", "P")
@@ -48,15 +53,44 @@ MoveMouse:
     a:: Return
     s:: Return
     d:: Return
-    Insert::
+    j::
+        If(LeftClicking==False){
+            LeftClicking := True
+            Click Down
+            Click Up
+            While (GetKeyState("j", "P")){
+            }
+            LeftClicking := False
+        }
+        Return
+    +j::
+        if(draggingLeft==False){
+            draggingLeft := True
+            LeftClicking := True
+            Click Down
+        } Else {
+            Click Up
+            draggingLeft := False
+            LeftClicking := False
+        }        
+        Return
+    k::
+        If(RightClicking==False){
+            RightClicking := True
+            Click Down Right
+            Click Up Right
+            While (GetKeyState("j", "P")){
+            }
+            RightClicking := False
+        }
+        Return
+    \::
         Activated := False
         SetTimer, MoveMouse, Off
         MouseMove mX, mY
-        Return
-
-    
+        Return    
     m::
-        
+        CoordMode, Mouse, Screen
         UserControl := False
         MouseGetPos currentX, currentY
         While(GetKeyState("m", "P")){
@@ -102,7 +136,7 @@ MoveMouse:
         }
         Sleep, 50
         UserControl := True
-    return
+        Return
 #If (!Activated)
     Insert::
         Activated := True
