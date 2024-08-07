@@ -2,45 +2,45 @@
 #Requires AutoHotkey v1
 CoordMode, Mouse, Screen
 
-global Activated :=False
-global XMovement := 0
-global YMovement := 0
-global Velocity := 0
-global MaxVelocity := 30
-global UserControl := True
-global LeftClicking := False
-global RightClicking := False
+global bActivated :=False
+global xMovement := 0
+global yMovement := 0
+global velocity := 0
+global maxVelocity := 30
+global userControl := True
+global leftClicking := False
+global rightClicking := False
 global draggingLeft := False
-
+global stepDistance := 120
 
 MouseGetPos mX, mY
 MsgBox % "ScreenHeight: " . A_ScreenHeight "`nScreenWidth: " . A_ScreenWidth "`nMouseX: " . mX "`nMouseY: " . mY
 
 
 calcVelocity(){
-    If(Velocity == 0){
+    If(velocity == 0){
         Return maxVelocity/10
     }
-    If(Velocity < maxVelocity){
-        Return Velocity + maxVelocity/10
+    If(velocity < maxVelocity){
+        Return velocity + maxVelocity/10
     } Else {
         Return maxVelocity
     }
 }
 
-MoveMouse:
+moveMouse:
     CoordMode, Mouse, Screen
-    If(UserControl==True){
-        Velocity := calcVelocity()
-        XMovement := -1*GetKeyState("a", "P") + GetKeyState("d", "P")
-        YMovement := -1*GetKeyState("w", "P") + GetKeyState("s", "P")
+    If(userControl==True){
+        velocity := calcVelocity()
+        xMovement := -1*GetKeyState("a", "P") + GetKeyState("d", "P")
+        yMovement := -1*GetKeyState("w", "P") + GetKeyState("s", "P")
         
-        If (XMovement != 0 && YMovement != 0){
-        MouseMove XMovement*Velocity/2, YMovement*Velocity/2, 0, R  
-        } Else If(XMovement == 0 && YMovement == 0){
-            Velocity := 0
+        If (xMovement != 0 && yMovement != 0){
+        MouseMove xMovement*velocity/2, yMovement*velocity/2, 0, R  
+        } Else If(xMovement == 0 && yMovement == 0){
+            velocity := 0
         } Else {
-            MouseMove XMovement*Velocity, YMovement*Velocity, 0, R
+            MouseMove xMovement*velocity, yMovement*velocity, 0, R
         }
     }
     Return
@@ -48,63 +48,105 @@ MoveMouse:
 
 
 
-#If (Activated)
+#If (bActivated)
     w:: Return
     a:: Return
     s:: Return
     d:: Return
     j::
-        If(LeftClicking==False){
-            LeftClicking := True
+        If(draggingLeft==True){
+            If(leftClicking==False){
+                leftClicking := True
+                Click Down    
+            } Else {
+                leftClicking := False
+                Click Up
+            }
+            Return
+        }
+        If(leftClicking==False){
+            leftClicking := True
             Click Down
             Click Up
             While (GetKeyState("j", "P")){
             }
-            LeftClicking := False
+            leftClicking := False
         }
         Return
     +j::
-        if(draggingLeft==False){
-            draggingLeft := True
-            LeftClicking := True
-            Click Down
-        } Else {
-            Click Up
-            draggingLeft := False
-            LeftClicking := False
-        }        
+        draggingLeft := !draggingLeft
+        Return
+    ,::
+        CoordMode, Mouse, Screen
+        userControl := False
+        MouseGetPos currentX, currentY
+        While(GetKeyState(",", "P")){
+            xMovement := -1*GetKeyState("a", "P") + GetKeyState("d", "P")
+            yMovement := -1*GetKeyState("w", "P") + GetKeyState("s", "P")
+            ;if the m key is pressed and a combination of wasd takes place
+            If(xMovement != 0 || yMovement != 0){
+                Sleep, 50
+                xMovement := -1*GetKeyState("a", "P") + GetKeyState("d", "P")
+                yMovement := -1*GetKeyState("w", "P") + GetKeyState("s", "P")
+                break
+            }
+        }
+        if (xMovement!=0 || yMovement!=0) {
+            distanceX := 0
+            distanceY := 0
+            
+            If(xMovement == 1){
+                distanceX := stepDistance
+            } Else If(xMovement == -1){
+                distanceX := -1*stepDistance
+            }
+            If(yMovement == 1){
+                distanceY := stepDistance
+            } Else If(yMovement == -1){
+                distanceY := -1*stepDistance
+            }
+            ;the mouse will move to the center in relation to its position and the direction that wasd goes
+            If(distanceX != 0 && distanceY != 0){
+                MouseMove distanceX/2, distanceY/2, 0, R
+            } Else {
+                MouseMove distanceX, distanceY, 0, R
+            }
+
+        }
+        Sleep, 50
+        userControl := True
         Return
     k::
-        If(RightClicking==False){
-            RightClicking := True
+        If(rightClicking==False){
+            rightClicking := True
             Click Down Right
             Click Up Right
             While (GetKeyState("j", "P")){
             }
-            RightClicking := False
+            rightClicking := False
         }
         Return
     \::
-        Activated := False
-        SetTimer, MoveMouse, Off
+        bActivated := False
+        SetTimer, moveMouse, Off
         MouseMove A_ScreenWidth/2, A_ScreenHeight/2
         Return    
     m::
         CoordMode, Mouse, Screen
-        UserControl := False
+        userControl := False
         MouseGetPos currentX, currentY
         While(GetKeyState("m", "P")){
-            XMovement := -1*GetKeyState("a", "P") + GetKeyState("d", "P")
-            YMovement := -1*GetKeyState("w", "P") + GetKeyState("s", "P")
+            xMovement := -1*GetKeyState("a", "P") + GetKeyState("d", "P")
+            yMovement := -1*GetKeyState("w", "P") + GetKeyState("s", "P")
             ;if the m key is pressed and a combination of wasd takes place
-            If(XMovement != 0 || YMovement != 0){
+            If(xMovement != 0 || yMovement != 0){
                 Sleep, 50
-                XMovement := -1*GetKeyState("a", "P") + GetKeyState("d", "P")
-                YMovement := -1*GetKeyState("w", "P") + GetKeyState("s", "P")
+                xMovement := -1*GetKeyState("a", "P") + GetKeyState("d", "P")
+                yMovement := -1*GetKeyState("w", "P") + GetKeyState("s", "P")
                 break
             }
         }
-        if (XMovement!=0 || YMovement!=0) {
+        if (xMovement!=0 || yMovement!=0) {
             leftSize := currentX
             rightSize := A_ScreenWidth - currentX
             topSize := currentY
@@ -113,14 +155,14 @@ MoveMouse:
             distanceX := 0
             distanceY := 0
             
-            If(XMovement == 1){
+            If(xMovement == 1){
                 distanceX := rightSize/2
-            } Else If(XMovement == -1){
+            } Else If(xMovement == -1){
                 distanceX := -1*leftSize/2
             }
-            If(YMovement == 1){
+            If(yMovement == 1){
                 distanceY := bottomSize/2
-            } Else If(YMovement == -1){
+            } Else If(yMovement == -1){
                 distanceY := -1*topSize/2
             }
             ;the mouse will move to the center in relation to its position and the direction that wasd goes
@@ -135,11 +177,11 @@ MoveMouse:
             MouseMove A_ScreenWidth/2, A_ScreenHeight/2
         }
         Sleep, 50
-        UserControl := True
+        userControl := True
         Return
-#If (!Activated)
+#If (!bActivated)
     Insert::
-        Activated := True
-        SetTimer, MoveMouse, 20
+        bActivated := True
+        SetTimer, moveMouse, 20
         MouseMove A_ScreenWidth/2, A_ScreenHeight/2
         Return
